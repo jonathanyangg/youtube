@@ -5,6 +5,7 @@ import Header from "@/components/Header"
 import VideoSummarizer from "@/components/VideoSummarizer"
 import HowItWorksSection from "@/components/HowItWorksSection"
 import Footer from "@/components/Footer"
+import ApiKeyInput from "@/components/ApiKeyInput"
 
 export default function LandingPage() {
 
@@ -14,8 +15,8 @@ export default function LandingPage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="container py-24 space-y-8 md:space-y-16 lg:py-32">
-          <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
+        <section className="container py-24 space-y-4 md:space-y-4 lg:py-32">
+          <div className="mb-12 mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
               Summarize YouTube Videos in Seconds
             </h1>
@@ -24,9 +25,9 @@ export default function LandingPage() {
             </p>
           </div>
           
+          <ApiKeyInput />
           <VideoSummarizer />
         </section>
-
         <HowItWorksSection />
       </main>
       

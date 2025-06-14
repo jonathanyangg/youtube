@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Youtube, Loader2, Clock, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Chat from "./Chat"
+import { toast } from "sonner"
 
 interface SummaryResponse {
   summary: string
@@ -18,37 +19,20 @@ export default function VideoSummarizer() {
   const [isLoading, setIsLoading] = useState(false)
   const [summary, setSummary] = useState<SummaryResponse | null>(null)
   const [transcriptData, setTranscriptData] = useState<any[]>([])
-  const [error, setError] = useState("")
-  const [apiKey, setApiKey] = useState("")
-  const [apiKeySaved, setApiKeySaved] = useState(false)
-
-  useEffect(() => {
-    const storedKey = localStorage.getItem("openai_api_key")
-    if (storedKey) setApiKey(storedKey)
-  }, [])
-
-  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKey(e.target.value)
-    setApiKeySaved(false)
-  }
-
-  const handleApiKeySave = () => {
-    localStorage.setItem("openai_api_key", apiKey)
-    setApiKeySaved(true)
-    setTimeout(() => setApiKeySaved(false), 1500)
-  }
 
   const handleSummarize = async () => {
     if (!videoUrl.trim()) {
-      setError("Please enter a YouTube URL")
+      toast.error("Please enter a YouTube URL")
       return
     }
-    if (!apiKey.trim()) {
-      setError("Please enter your OpenAI API key above")
+
+    const apiKey = localStorage.getItem("openai_api_key")
+    if (!apiKey) {
+      toast.error("Please save your OpenAI API key first")
       return
     }
+
     setIsLoading(true)
-    setError("")
     setSummary(null)
     setTranscriptData([])
 
@@ -58,7 +42,7 @@ export default function VideoSummarizer() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ video_url: videoUrl, openai_api_key: apiKey }),
+        body: JSON.stringify({ video_url: videoUrl, api_key: apiKey }),
       })
 
       if (!response.ok) {
@@ -71,7 +55,7 @@ export default function VideoSummarizer() {
       setTranscriptData(data.transcript_data)
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      toast.error(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -79,32 +63,6 @@ export default function VideoSummarizer() {
 
   return (
     <div className="space-y-8">
-      {/* API Key Section */}
-      <div className="mx-auto max-w-2xl space-y-2">
-        <label className="block text-sm font-medium mb-1" htmlFor="openai-api-key">
-          OpenAI API Key
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            id="openai-api-key"
-            type="password"
-            value={apiKey}
-            onChange={handleApiKeyChange}
-            className="flex-1 px-3 py-2 border rounded-md bg-background text-sm focus:outline-none"
-            placeholder="sk-..."
-            autoComplete="off"
-          />
-          <button
-            type="button"
-            onClick={handleApiKeySave}
-            className="rounded-md px-4 py-2 bg-primary text-primary-foreground text-sm font-medium shadow-sm hover:bg-primary/90 focus:outline-none"
-          >
-            Save
-          </button>
-          {apiKeySaved && <span className="text-green-600 text-sm ml-2">Saved!</span>}
-        </div>
-      </div>
-
       {/* Input Section */}
       <div className="mx-auto max-w-2xl space-y-4">
         <div className="flex items-center gap-3 p-2 rounded-full border bg-background shadow-sm">
@@ -134,12 +92,6 @@ export default function VideoSummarizer() {
             )}
           </Button>
         </div>
-        
-        {error && (
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
       </div>
 
       {/* Summary Display */}

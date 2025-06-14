@@ -7,8 +7,32 @@ import os
 
 load_dotenv()
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# Global variable to store the current API key
+current_api_key = os.environ.get("OPENAI_API_KEY")
 
+def get_openai_client(api_key: str = None) -> OpenAI:
+    """
+    Get an OpenAI client instance with the provided API key.
+    Falls back to environment variable if no key provided.
+    """
+    key = api_key or current_api_key
+    if not key:
+        raise ValueError("No OpenAI API key provided")
+    return OpenAI(api_key=key)
+
+def validate_api_key(api_key: str) -> bool:
+    """
+    Validate an OpenAI API key by making a simple API call.
+    """
+    try:
+        client = get_openai_client(api_key)
+        # Make a simple API call to validate the key
+        client.models.list()
+        global current_api_key
+        current_api_key = api_key
+        return True
+    except Exception:
+        return False
 
 def get_video_id(url: str) -> str:
     """
@@ -53,7 +77,7 @@ def get_video_transcript(video_id: str) -> List[Dict[str, Any]]:
         raise Exception(f"Failed to fetch transcript: {str(e)}")
 
 
-def summarize_video(transcript_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) -> Dict[str, Any]:
     """
     Generate AI summary of video transcript with key timestamps.
     """
@@ -67,6 +91,7 @@ def summarize_video(transcript_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         formatted_transcript += f"[{timestamp}] {snippet['text']}\n"
     
     try:
+        client = get_openai_client(api_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -102,7 +127,7 @@ def format_timestamp(seconds: float) -> str:
     return f"{minutes:02d}:{seconds:02d}"
 
 
-def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], summary: str) -> str:
+def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], summary: str, api_key: str = None) -> str:
     """
     Answer questions about the video using transcript and summary context.
     """
@@ -116,6 +141,7 @@ def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], 
         formatted_transcript += f"[{timestamp}] {snippet['text']}\n"
     
     try:
+        client = get_openai_client(api_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[

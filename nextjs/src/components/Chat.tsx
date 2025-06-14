@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Send, Loader2, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -55,6 +56,12 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
 
+    const apiKey = localStorage.getItem("openai_api_key")
+    if (!apiKey) {
+      toast.error("Please save your OpenAI API key first")
+      return
+    }
+
     const userMessage = input.trim()
     const userMessageId = `user-${Date.now()}`
     const assistantMessageId = `assistant-${Date.now() + 1}`
@@ -74,7 +81,8 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
           question: userMessage,
           video_id: videoId,
           transcript_data: transcriptData,
-          summary: summary
+          summary: summary,
+          api_key: apiKey
         }),
       })
 

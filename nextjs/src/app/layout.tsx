@@ -1,16 +1,16 @@
 import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
+import type { Metadata } from "next"
+import { Toaster } from "sonner"
 
 import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata = {
-  title: "VideoSummarizer - Summarize YouTube Videos in Seconds",
-  description:
-    "Get the key points from any YouTube video without watching the whole thing. Save time and stay informed.",
-    generator: 'v0.dev'
+export const metadata: Metadata = {
+  title: "YouTube Video Summarizer",
+  description: "Get AI-powered summaries of YouTube videos",
 }
 
 export default function RootLayout({
@@ -24,6 +24,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   )
