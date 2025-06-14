@@ -72,15 +72,15 @@ def summarize_video(transcript_data: List[Dict[str, Any]]) -> Dict[str, Any]:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant that creates concise summaries of video transcripts. Include key timestamps in your summary."
+                    "content": "You are a helpful assistant that creates concise summaries of video transcripts. Always structure your response with a brief general overview followed by detailed points with timestamps."
                 },
                 {
                     "role": "user",
-                    "content": f"Please provide a brief summary of this video transcript with the most important points and their timestamps:\n\n{formatted_transcript}"
+                    "content": f"Please summarize this video transcript in the following format:\n\n1. First, provide a 3-sentence general overview of what the video is about\n2. Then provide detailed key points with their timestamps\n\nTranscript:\n{formatted_transcript}"
                 }
             ],
-            max_tokens=400,
-            temperature=0.4
+            max_tokens=600,
+            temperature=0.6
         )
         
         summary = response.choices[0].message.content
