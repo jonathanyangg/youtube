@@ -11,12 +11,6 @@ export default function Header() {
         </Link>
         <nav className="hidden md:flex gap-6">
           <button 
-            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-sm font-medium hover:underline underline-offset-4"
-          >
-            Features
-          </button>
-          <button 
             onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
             className="text-sm font-medium hover:underline underline-offset-4"
           >
