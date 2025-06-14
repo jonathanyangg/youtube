@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Send, Loader2, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  id: string
 }
 
 interface ChatProps {
@@ -19,13 +20,48 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [pendingScrollToMessage, setPendingScrollToMessage] = useState<string | null>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+
+  const scrollToMessage = (messageId: string) => {
+    const messageElement = chatContainerRef.current?.querySelector(`[data-message-id="${messageId}"]`)
+    const container = chatContainerRef.current
+    
+    if (messageElement && container) {
+      const containerRect = container.getBoundingClientRect()
+      const messageRect = messageElement.getBoundingClientRect()
+      
+      // Calculate the scroll position to show the message at the bottom of the container
+      const scrollTop = container.scrollTop + (messageRect.bottom - containerRect.bottom) + 10
+      
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (pendingScrollToMessage) {
+      const timeoutId = setTimeout(() => {
+        scrollToMessage(pendingScrollToMessage)
+        setPendingScrollToMessage(null)
+      }, 100)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [pendingScrollToMessage])
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage = input.trim()
+    const userMessageId = `user-${Date.now()}`
+    const assistantMessageId = `assistant-${Date.now() + 1}`
+    
     setInput("")
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setMessages(prev => [...prev, { role: 'user', content: userMessage, id: userMessageId }])
+    setPendingScrollToMessage(userMessageId)
     setIsLoading(true)
 
     try {
@@ -47,12 +83,16 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
       }
 
       const data = await response.json()
-      setMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
+      setMessages(prev => [...prev, { role: 'assistant', content: data.answer, id: assistantMessageId }])
+      setPendingScrollToMessage(assistantMessageId)
     } catch (error) {
+      const errorMessageId = `assistant-error-${Date.now()}`
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "Sorry, I couldn't process your question. Please try again." 
+        content: "Sorry, I couldn't process your question. Please try again.",
+        id: errorMessageId
       }])
+      setPendingScrollToMessage(errorMessageId)
     } finally {
       setIsLoading(false)
     }
@@ -76,7 +116,7 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
         </div>
       </div>
 
-      <div className="h-80 overflow-y-auto p-6 space-y-4">
+      <div ref={chatContainerRef} className="h-80 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
           <div className="text-center py-12 space-y-2">
             <p className="text-muted-foreground">Ask me anything about this video!</p>
@@ -85,9 +125,10 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
             </p>
           </div>
         ) : (
-          messages.map((message, index) => (
+          messages.map((message) => (
             <div
-              key={index}
+              key={message.id}
+              data-message-id={message.id}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
