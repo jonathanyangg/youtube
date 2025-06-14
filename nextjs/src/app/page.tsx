@@ -16,7 +16,7 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="container py-24 space-y-4">
-          <div className="mb-16 mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
+          <div className="mb-12 mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
               Summarize YouTube Videos in Seconds
             </h1>
