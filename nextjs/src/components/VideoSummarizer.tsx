@@ -116,7 +116,7 @@ export default function VideoSummarizer() {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Summary</h3>
               <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                <p className="whitespace-pre-wrap text-foreground leading-relaxed">
                   {summary.summary}
                 </p>
               </div>

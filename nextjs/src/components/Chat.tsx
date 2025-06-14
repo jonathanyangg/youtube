@@ -66,19 +66,23 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
   }
 
   return (
-    <div className="border rounded-lg bg-background">
-      <div className="p-4 border-b">
+    <div className="rounded-lg border bg-background shadow-sm">
+      <div className="p-6 border-b">
         <div className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5 text-blue-500" />
-          <h3 className="font-semibold">Ask questions about this video</h3>
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-50">
+            <MessageCircle className="w-4 h-4 text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold">Ask questions about this video</h3>
         </div>
       </div>
 
-      <div className="h-64 overflow-y-auto p-4 space-y-4">
+      <div className="h-80 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <p>Ask me anything about this video!</p>
-            <p className="text-sm mt-1">Try: "What are the main points?" or "Can you explain the part about...?"</p>
+          <div className="text-center py-12 space-y-2">
+            <p className="text-muted-foreground">Ask me anything about this video!</p>
+            <p className="text-sm text-muted-foreground">
+              Try: "What are the main points?" or "Can you explain the part about...?"
+            </p>
           </div>
         ) : (
           messages.map((message, index) => (
@@ -87,40 +91,46 @@ export default function Chat({ videoId, transcriptData, summary }: ChatProps) {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                className={`max-w-[85%] rounded-lg px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-muted text-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border bg-background'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {message.content}
+                </p>
               </div>
             </div>
           ))
         )}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-muted rounded-lg px-3 py-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="border bg-background rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Thinking...</span>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-4 border-t">
-        <div className="flex gap-2">
+      <div className="p-6 border-t">
+        <div className="flex items-center gap-3 p-2 rounded-full border bg-background shadow-sm">
           <input
             type="text"
             placeholder="Ask a question about the video..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 px-3 py-2 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none"
             disabled={isLoading}
           />
           <Button 
             onClick={sendMessage} 
             disabled={isLoading || !input.trim()}
+            className="rounded-full px-4"
             size="sm"
           >
             <Send className="w-4 h-4" />

@@ -28,7 +28,6 @@ export default function LandingPage() {
           <VideoSummarizer />
         </section>
 
-        <FeaturesSection />
         <HowItWorksSection />
       </main>
       
