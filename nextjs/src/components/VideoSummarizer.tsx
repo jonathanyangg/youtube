@@ -3,18 +3,21 @@
 import { useState } from "react"
 import { Youtube, Loader2, Clock, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Chat from "./Chat"
 
 interface SummaryResponse {
   summary: string
   total_duration: string
   snippet_count: number
   video_id: string
+  transcript_data: any[]
 }
 
 export default function VideoSummarizer() {
   const [videoUrl, setVideoUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [summary, setSummary] = useState<SummaryResponse | null>(null)
+  const [transcriptData, setTranscriptData] = useState<any[]>([])
   const [error, setError] = useState("")
 
   const handleSummarize = async () => {
@@ -26,6 +29,7 @@ export default function VideoSummarizer() {
     setIsLoading(true)
     setError("")
     setSummary(null)
+    setTranscriptData([])
 
     try {
       const response = await fetch("http://localhost:8000/process_video", {
@@ -43,6 +47,8 @@ export default function VideoSummarizer() {
 
       const data: SummaryResponse = await response.json()
       setSummary(data)
+      setTranscriptData(data.transcript_data)
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
@@ -91,7 +97,7 @@ export default function VideoSummarizer() {
 
       {/* Summary Display */}
       {summary && (
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           <div className="rounded-lg border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-4 pb-4 border-b">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -116,6 +122,15 @@ export default function VideoSummarizer() {
               </div>
             </div>
           </div>
+
+          {/* Chat Section */}
+          {transcriptData.length > 0 && (
+            <Chat 
+              videoId={summary.video_id}
+              transcriptData={transcriptData}
+              summary={summary.summary}
+            />
+          )}
         </div>
       )}
     </div>

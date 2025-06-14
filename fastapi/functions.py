@@ -100,3 +100,39 @@ def format_timestamp(seconds: float) -> str:
     minutes = int(seconds // 60)
     seconds = int(seconds % 60)
     return f"{minutes:02d}:{seconds:02d}"
+
+
+def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], summary: str) -> str:
+    """
+    Answer questions about the video using transcript and summary context.
+    """
+    if not question or not transcript_data:
+        raise ValueError("Question and transcript data are required")
+    
+    # Format transcript for context
+    formatted_transcript = ""
+    for snippet in transcript_data:
+        timestamp = format_timestamp(snippet['start'])
+        formatted_transcript += f"[{timestamp}] {snippet['text']}\n"
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that answers questions about video content. Use the provided transcript and summary to give accurate, specific answers. Include timestamps when relevant."
+                },
+                {
+                    "role": "user",
+                    "content": f"Video Summary:\n{summary}\n\nVideo Transcript:\n{formatted_transcript}\n\nQuestion: {question}"
+                }
+            ],
+            max_tokens=400,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        raise Exception(f"Failed to answer question: {str(e)}")
