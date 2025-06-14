@@ -68,7 +68,7 @@ def summarize_video(transcript_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
@@ -79,8 +79,8 @@ def summarize_video(transcript_data: List[Dict[str, Any]]) -> Dict[str, Any]:
                     "content": f"Please provide a brief summary of this video transcript with the most important points and their timestamps:\n\n{formatted_transcript}"
                 }
             ],
-            max_tokens=500,
-            temperature=0.7
+            max_tokens=400,
+            temperature=0.4
         )
         
         summary = response.choices[0].message.content
