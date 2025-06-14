@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import Header from "@/components/Header"
 import VideoSummarizer from "@/components/VideoSummarizer"
-import FeaturesSection from "@/components/FeaturesSection"
 import HowItWorksSection from "@/components/HowItWorksSection"
 import Footer from "@/components/Footer"
 
