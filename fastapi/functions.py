@@ -1,9 +1,24 @@
 import re
+import logging
 from typing import Dict, List, Any
 from youtube_transcript_api import YouTubeTranscriptApi
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+
+# ---------------------------------------------------------------------------
+# Logging setup
+# ---------------------------------------------------------------------------
+# If the parent application (Uvicorn) already configures logging we will not
+# override it, but having a basic configuration here guarantees logs still
+# appear when the module is executed in isolation (e.g. unit tests).
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -24,14 +39,17 @@ def validate_api_key(api_key: str) -> bool:
     """
     Validate an OpenAI API key by making a simple API call.
     """
+    logger.info("Validating OpenAI API key")
     try:
         client = get_openai_client(api_key)
         # Make a simple API call to validate the key
         client.models.list()
         global current_api_key
         current_api_key = api_key
+        logger.info("API key validated successfully")
         return True
-    except Exception:
+    except Exception as e:
+        logger.exception("API key validation failed: %s", e)
         return False
 
 def get_video_id(url: str) -> str:
@@ -65,15 +83,18 @@ def get_video_transcript(video_id: str) -> List[Dict[str, Any]]:
         raise ValueError("Video ID is required")
     
     try:
+        logger.info("Fetching transcript for video ID: %s", video_id)
         ytt_api = YouTubeTranscriptApi()
         fetched_transcript = ytt_api.fetch(video_id, languages=['en'])
         
         # Convert to raw data format for easier processing
         transcript_data = fetched_transcript.to_raw_data()
         
+        logger.info("Fetched %d transcript snippets", len(transcript_data))
         return transcript_data
         
     except Exception as e:
+        logger.exception("Failed to fetch transcript: %s", e)
         raise Exception(f"Failed to fetch transcript: {str(e)}")
 
 
@@ -91,6 +112,7 @@ def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) 
         formatted_transcript += f"[{timestamp}] {snippet['text']}\n"
     
     try:
+        logger.info("Generating summary using OpenAI (%d transcript snippets)", len(transcript_data))
         client = get_openai_client(api_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -110,6 +132,7 @@ def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) 
         
         summary = response.choices[0].message.content
         
+        logger.info("Summary generated (%.0f tokens)", len(summary.split()))
         return {
             "summary": summary,
             "total_duration": format_timestamp(transcript_data[-1]['start'] + transcript_data[-1]['duration']),
@@ -117,6 +140,7 @@ def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) 
         }
         
     except Exception as e:
+        logger.exception("Failed to generate summary: %s", e)
         raise Exception(f"Failed to generate summary: {str(e)}")
 
 
@@ -141,6 +165,7 @@ def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], 
         formatted_transcript += f"[{timestamp}] {snippet['text']}\n"
     
     try:
+        logger.info("Answering question via OpenAI: '%s'", question[:60])
         client = get_openai_client(api_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -158,7 +183,10 @@ def answer_video_question(question: str, transcript_data: List[Dict[str, Any]], 
             temperature=0.7
         )
         
-        return response.choices[0].message.content
+        answer = response.choices[0].message.content
+        logger.info("Answer generated (%d chars)", len(answer))
+        return answer
         
     except Exception as e:
+        logger.exception("Failed to answer question: %s", e)
         raise Exception(f"Failed to answer question: {str(e)}")
