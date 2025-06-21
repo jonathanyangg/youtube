@@ -3,13 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from functions import get_video_id, get_video_transcript, summarize_video, answer_video_question, validate_api_key
 from typing import List, Dict, Any
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="YouTube Video Summarizer API")
 
+frontend_urls = os.getenv("FRONTEND_URLS", "http://localhost:3000")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins = frontend_urls.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
