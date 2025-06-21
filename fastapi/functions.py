@@ -98,7 +98,7 @@ def get_video_transcript(video_id: str) -> List[Dict[str, Any]]:
         raise Exception(f"Failed to fetch transcript: {str(e)}")
 
 
-def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) -> Dict[str, Any]:
+def summarize_video(transcript_data: List[Dict[str, Any]], api_key: str = None) -> Dict[str, Any]
     """
     Generate AI summary of video transcript with key timestamps.
     """
