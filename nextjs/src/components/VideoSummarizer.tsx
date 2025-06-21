@@ -14,7 +14,7 @@ interface SummaryResponse {
   transcript_data: any[]
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
 
 export default function VideoSummarizer() {
   const [videoUrl, setVideoUrl] = useState("")
@@ -39,6 +39,7 @@ export default function VideoSummarizer() {
     setTranscriptData([])
 
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
       const response = await fetch(`${API_URL}/process_video`, {
         method: "POST",
         headers: {

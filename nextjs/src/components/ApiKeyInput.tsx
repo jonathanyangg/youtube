@@ -8,6 +8,8 @@ import { Key } from "lucide-react"
 export default function ApiKeyInput() {
   const [apiKey, setApiKey] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  
+
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
@@ -17,7 +19,8 @@ export default function ApiKeyInput() {
 
     setIsLoading(true)
     try {
-      const response = await fetch("http://localhost:8000/validate_api_key", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      const response = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
